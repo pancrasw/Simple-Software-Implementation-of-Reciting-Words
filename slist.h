@@ -2,6 +2,7 @@
 #define SLIST_H
 //@author:Ïö
 #include <iostream>
+#include <time.h>
 using namespace std;
 
 template<typename Type>

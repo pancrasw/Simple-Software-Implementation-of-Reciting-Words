@@ -1,5 +1,4 @@
-#ifndef WORDLIST_CPP
-#define WORDLIST_CPP
+
 #include"wordlist.h"
 //@author:Ïö
 
@@ -123,4 +122,3 @@ void WordList_daily::put_tail()
 	ptr->next = nullptr;
 }
 
-#endif // !WORDLIST_CPP

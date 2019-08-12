@@ -6,7 +6,8 @@
 #include<iostream>
 #include<fstream>
 #include<vector>
-#define ACCOUNT
+#define WORD 4
+#define NAME 21
 //@author:霄
 using std::vector;
 class Account
@@ -16,10 +17,10 @@ public:
 	~Account();
 protected:
 	char vid;//序列号
-	char na[20];//名字，限定字符数
+	string na;//名字，限定字符数
 	string md5;//密码md5
 	static Md5Encode encode_obj;//md5编码器
-	Account(char, char*, string);
+	Account(char, string, string);
 protected:
 	short go;//每日目标
 	friend class AccountManageSystem;
@@ -46,13 +47,13 @@ public:
 class AccountManageSystem 
 {
 public:
-	char**namelist;//所有用户的名字表
 	static Account_running* ar;//正在运行的用户
 	static vector<Account> account_list;//用户表
 	AccountManageSystem();
 	~AccountManageSystem();
 	bool sign_in(char,string);//验证密码
-	void new_account(char*,string);
+	void new_account(string,string);
+	string showname(char);
 };
 
 #endif // !ACCOUNT_H

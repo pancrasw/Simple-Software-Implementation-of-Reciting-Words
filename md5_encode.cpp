@@ -1,5 +1,4 @@
-#ifndef MD5_ENCODE_CPP
-#define MD5_ENCODE_CPP
+
 #include "md5_encode.h"
 #include<iostream>
 // »ÃÊý¶¨Òå
@@ -214,5 +213,3 @@ std::string Md5Encode::Encode(std::string src_info) {
 	result.append(GetHexStr(param.ud_));
 	return result;
 }
-
-#endif // !MD%_ENCODE_H

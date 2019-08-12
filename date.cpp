@@ -7,7 +7,6 @@
 void Date::set_date()
 {
 	time_t t;
-	struct tm *p;
 	t = time(0) + 28800;
 	t /= DAY;
 	date = t;
@@ -37,11 +36,11 @@ void Date::set_date()
 char* Date::get_date()
 {
 	time_t t;
-	struct tm *p=nullptr;
+	struct tm p;
 	t = date * DAY;
-	p=gmtime(&t);
+	gmtime_s(&p, &t);
 	static char s[11];//11个字符，其中包括空字符
-	strftime(s, 11, "%Y-%m-%d", p);
+	strftime(s, 11, "%Y-%m-%d", &p);
 	return s;
 }
 
@@ -53,5 +52,4 @@ bool Date::istoday()
 }
 
 short Date::get_short() { return date; }
-
 #endif // !DATE_CPP
