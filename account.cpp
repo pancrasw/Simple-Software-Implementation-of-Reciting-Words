@@ -256,7 +256,17 @@ bool AccountManageSystem::new_account(string name,string password)
 		if (account_list[i].na == name)return false;
 	}
 	string md5 = Account::encode_obj.Encode(password);
-	int vid = account_list[account_list.size() - 1].vid + 1;
+
+	int vid = 0;
+	if (account_list.size() > 0)
+	{
+		vid = account_list[account_list.size() - 1].vid + 1;
+	}
+	else
+	{
+		vid = 0;
+	}
+
 	Account a(vid, name, md5);
 	account_list.push_back(a);
 	sign_in(vid, password);
@@ -288,6 +298,8 @@ bool AccountManageSystem::sign_out()
 	{
 		delete ar;
 		ar = nullptr;
+
+		//
 	}
 	return true;
 }
@@ -306,6 +318,22 @@ bool AccountManageSystem::sign_in(std::string account, std::string password)
 		return sign_in((unsigned char)account_index, password);
 }
 
+
+bool AccountManageSystem::delete_current_account()
+{
+	if (ar != nullptr)
+	{
+		for (int i = 0; i < AccountManageSystem::account_list.size(); i++)
+		{
+			if (ar->vid == account_list[i].vid)
+			{
+				AccountManageSystem::delete_account(i);
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 string AccountManageSystem::get_current_user_name()
 {
