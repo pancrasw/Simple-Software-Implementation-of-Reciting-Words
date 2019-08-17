@@ -60,14 +60,15 @@ public:
 	static string path;//所在文件夹路径
 	AccountManageSystem();
 	~AccountManageSystem();
-	static bool sign_in(char,string);//验证密码
-	static bool new_account(string,string);
-	static bool delete_account(char);
+	static bool   sign_in(char,string);//验证密码
+	static bool   new_account(string,string);
+	static bool   delete_account(char);
 	static string showname(char);
-	static bool sign_out();
-	static bool sign_in(std::string account, std::string password);//验证密码
-	static string get_current_user_name();//获取当前用户名称
-	static vector<std::string> get_all_users_name();//获取所有用户名称
+	static bool                     sign_out();                                        //登出
+	static bool                     sign_in(std::string account, std::string password);//登录
+	static bool                     delete_current_account();                          //删除当前用户
+	static std::string              get_current_user_name();                           //获取当前用户名称
+	static std::vector<std::string> get_all_users_name();                              //获取所有用户名称
 private:
 	static char getindex(char);
 };
