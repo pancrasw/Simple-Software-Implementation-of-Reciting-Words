@@ -25,6 +25,21 @@ void WordList::addword(short id, char state, char times,short date)
 	}
 }
 
+void WordList::addword(Wordnode w) 
+{
+	
+	this->Slist::operator+(w);
+	switch (w.st)
+	{
+	case Wordnode::undone: undone_t++; break;
+	case Wordnode::done:done_t++; break;
+	case Wordnode::wrong:wrong_t++; break;
+	case Wordnode::right:right_t++;
+	default:
+		break;
+	}
+}
+
 Wordnode WordList::pop() 
 {
 	Wordnode word_obj=Slist::access(0)->data;

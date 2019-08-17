@@ -19,9 +19,4 @@ private:
 	//char* get_time_now();
 };
 
-class DateList:public Slist<Date>
-{
-	
-};
-
 #endif // !DATE_H

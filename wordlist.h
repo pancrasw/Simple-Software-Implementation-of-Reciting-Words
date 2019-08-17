@@ -14,6 +14,12 @@ struct Wordnode
 	char ti = none;//背的次数
 	Date da;//日期
 	Wordnode() {};
+	Wordnode(short wid, char state, char time, Date date) :
+		id(wid),
+		st(state),
+		ti(time),
+		da(date)
+	{}
 };
 
 class WordList :public Slist<Wordnode>
@@ -22,6 +28,7 @@ public:
 	WordList();
 	~WordList();
 	void addword(short,char,char,short);//添加单词
+	void addword(Wordnode);
 	Wordnode pop();//获取单词表中第一个单词
 	int count_total();
 	int count_undone();
@@ -43,9 +50,9 @@ class WordList_daily:public WordList
 {
 public:
 	void check(bool);
+	Date da;
 private:
 	void put_tail();//将单词放到末尾
-
 };
 
 #endif

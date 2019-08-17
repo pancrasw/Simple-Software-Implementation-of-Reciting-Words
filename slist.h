@@ -48,6 +48,7 @@ public:
 	Snode<Type>* access(int n);//没有报错处理，访问第n+1个数据
 	void plusmerge(Slist a, Slist b);
 	void insert(Type n, int position);
+	void insert(Snode<Type>*, Snode<Type>*, Type n);
 	void show();//输出链表每个元素
 	void delete_node(int n);//删除第n+1个元素
 	void shuffle();//洗牌，打乱牌序
@@ -55,11 +56,12 @@ public:
 };
 
 template<typename Type>
-void insert(Snode<Type>*a, Snode<Type>*b, Type n) //在两个相邻节点中间插入新节点
+void Slist<Type>::insert(Snode<Type>*a, Snode<Type>*b, Type n) //在两个相邻节点中间插入新节点
 {
 	a = a->next = new Snode<Type>;
 	a->data = n;
 	a->next = b;
+	total++;
 }
 
 template<typename Type>
@@ -198,6 +200,7 @@ void Slist<Type>::delete_node(int n)
 	for (int i = 0; i < n; i++, ptr_slow = ptr_fast, ptr_fast = ptr_fast->next);
 	ptr_slow->next = ptr_fast->next;
 	delete ptr_fast;
+	total--;
 }
 
 template<typename Type>

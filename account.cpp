@@ -48,9 +48,13 @@ Account_running::Account_running(Account ac):
 	}
 	char suffix[] = ".dat";
 	strcpy_s(file_name + tIndex, 5, suffix);
-
 	ifstream ifs(file_name, ios_base::binary);
 	delete[] file_name;
+	wv_undone = new vector<Wordnode>*[4];
+	for (int i = 0; i < 5; i++) 
+	{
+		wv_undone[i] = new vector<Wordnode>;
+	}
 	short* id=new short;
 	char* st=new char;
 	char* ti=new char;
@@ -62,14 +66,45 @@ Account_running::Account_running(Account ac):
 		ifs.read((char*)ti, 1);
 		ifs.read((char*)da, 2);
 		Date d(*da);
+		Wordnode w(*id, *st, *ti, d);
 		if ((!d.istoday())&&(*ti!=Wordnode::fifth)) 
 		{
-			wl_daily.addword(*id, *st, *ti, *da);
+			switch (*ti)
+			{
+			case Wordnode::none:wl_new.addword(w);
+			case Wordnode::first:wv_undone[0]->push_back(w);
+			case Wordnode::second:wv_undone[1]->push_back(w);
+			case Wordnode::third:wv_undone[2]->push_back(w);
+			case Wordnode::fourth:wv_undone[3]->push_back(w);
+			}
 			continue;
 		}
 		wl_done.addword(*id, *st, *ti, *da);
 	}
-	delete id, st, ti, da;
+	ifs.close();
+	string fn = string(na)+string("1.dat");//每日任务单词
+	ifstream ifs(fn.c_str(), ios_base::binary);
+	ifs.read((char*)da, 2);
+	Date d(*da);
+	if (d.istoday()) 
+	{
+		for (; ifs;) 
+		{
+			ifs.read((char*)id, 2);
+			ifs.read((char*)st, 1);
+			ifs.read((char*)ti, 1);
+			ifs.read((char*)da, 2);
+			Date d(*da);
+			Wordnode w(*id, *st, *ti, d);
+			wl_daily.addword(w);
+		}
+	}
+	ifs.close();
+}
+
+int Account_running::known_t() 
+{
+	return wl_done.count_total();
 }
 
 Account_running::~Account_running() 
@@ -83,7 +118,7 @@ Account_running::~Account_running()
 	ofstream ofs(file_name, ios_base::binary);
 	delete file_name;
 	Wordnode w;
-	for (int i=0;i<wl_done.count_total();i++) 
+	for (; wl_done.count_total() != 0;)
 	{
 		w = wl_done.pop();
 		wl_done.delete_node(0);
@@ -92,7 +127,35 @@ Account_running::~Account_running()
 		ofs.write((char*)&w.ti, 1);
 		ofs.write((char*)&w.da, 2);
 	}
-	for (int i = 0; i < wl_daily.count_total(); i++)
+	for (; wl_new.count_total() != 0;)
+	{
+		w = wl_new.pop();
+		wl_new.delete_node(0);
+		ofs.write((char*)&w.id, 2);
+		ofs.write((char*)&w.st, 1);
+		ofs.write((char*)&w.ti, 1);
+		ofs.write((char*)&w.da, 2);
+	}
+	for (int i = 0; i < 4; i++) 
+	{
+		for (int j = (*(wv_undone[i])).size(); i > 0; i--) 
+		{
+			w = (*(wv_undone[i])).back();
+			(*(wv_undone[i])).pop_back();
+			ofs.write((char*)&w.id, 2);
+			ofs.write((char*)&w.st, 1);
+			ofs.write((char*)&w.ti, 1);
+			ofs.write((char*)&w.da, 2);
+		}
+	}
+	ofs.close();
+	string fn = string(na) + string("1.dat");//存放每日任务
+	ofstream ofs(fn.c_str(), ios_base::binary);
+	Date da;
+	da.set_date();
+	short a = da.get_short();
+	ofs.write((char*)&a, 2);
+	for (; wl_daily.count_total() != 0;)
 	{
 		w = wl_daily.pop();
 		wl_daily.delete_node(0);
@@ -101,6 +164,7 @@ Account_running::~Account_running()
 		ofs.write((char*)&w.ti, 1);
 		ofs.write((char*)&w.da, 2);
 	}
+	ofs.close();
 }
 
 void Account_running::setpassword(string password) 
@@ -123,7 +187,12 @@ void Account_running::setgoal(int goal)
 	go = goal;
 }
 
-
+void Account_running::complete() 
+{
+	Date da;
+	da.get_date();
+	date_list.operator+(da);
+}
 
 AccountManageSystem::AccountManageSystem() 
 {
@@ -131,23 +200,19 @@ AccountManageSystem::AccountManageSystem()
 
 	if (!file_is.is_open()|| file_is.bad())
 		return;
-
 	char vid;
 	char na[21];
 	string md5;
 	char tMd5[33];
 	tMd5[32] = 0;
-	int i = 0;
 	while (!file_is.eof())
 	{
 		file_is.read((char*)&vid,1);
-		if (vid != i)return;
 		file_is.read((char*)&na, NAME);
 		file_is.read((char*)tMd5, 32);//
 		md5 = std::string(tMd5);
 		Account a(vid, string(na), md5);
 		account_list.push_back(a);
-		i++;
 	}
 }
 
@@ -156,26 +221,47 @@ AccountManageSystem::~AccountManageSystem()
 	ofstream os("accountlist.dat",ios_base::binary|ios_base::trunc);
 	if (account_list.size() != 0) 
 	{
-		for (int i = 0; i < account_list.size(); i++)
+		for (char i = 0; i < account_list.size(); i++)
 		{
-			os.write((char*)&((account_list[i]).vid), 1);
+			os.write(&(account_list[i]).vid, 1);
 			os.write((account_list[i]).na.c_str(), NAME);
 			os.write((account_list[i]).md5.c_str(), 32);
 		}
 	}
 }
 
-void AccountManageSystem::new_account(string name,string password) 
+bool AccountManageSystem::new_account(string name,string password) 
 {
+	for (int i = 0; i < account_list.size(); i++) 
+	{
+		if (account_list[i].na == name)return false;
+	}
 	string md5 = Account::encode_obj.Encode(password);
-	Account a(int(account_list.size()), name, md5);
+	int vid = account_list[account_list.size()].vid + 1;
+	Account a(vid, name, md5);
 	account_list.push_back(a);
-	sign_in(int(account_list.size()) - 1, password);
+	sign_in(vid, password);
+	return true;
+}
+
+void AccountManageSystem::delete_account(char vid)
+{
+	string path = string(".\\")+account_list[getindex(vid)].na + string(".dat");
+	account_list.erase(account_list.begin() + getindex(vid));
+	remove(path.c_str());
 }
 
 string AccountManageSystem::showname(char vid) 
 {
 	return account_list[vid].na;
+}
+
+char AccountManageSystem::getindex(char vid)
+{
+	for (int i = 0; i < account_list.size(); i++) 
+	{
+		if (account_list[i].vid == vid)return i;
+	}
 }
 
 Account_running* AccountManageSystem::ar = nullptr;
