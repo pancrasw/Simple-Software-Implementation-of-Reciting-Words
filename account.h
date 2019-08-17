@@ -11,6 +11,8 @@
 #define NAME 21
 //@author:霄
 using std::vector;
+using std::string;
+
 class Account
 {
 public:
@@ -58,12 +60,16 @@ public:
 	static string path;//所在文件夹路径
 	AccountManageSystem();
 	~AccountManageSystem();
-	bool sign_in(char,string);//验证密码
-	bool new_account(string,string);
-	void delete_account(char);
-	string showname(char);
+	static bool sign_in(char,string);//验证密码
+	static bool new_account(string,string);
+	static bool delete_account(char);
+	static string showname(char);
+	static bool sign_out();
+	static bool sign_in(std::string account, std::string password);//验证密码
+	static string get_current_user_name();//获取当前用户名称
+	static vector<std::string> get_all_users_name();//获取所有用户名称
 private:
-	char getindex(char);
+	static char getindex(char);
 };
 
 #endif // !ACCOUNT_H

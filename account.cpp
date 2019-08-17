@@ -5,6 +5,7 @@
 //@author:霄
 Md5Encode Account::encode_obj;
 
+using std::string;
 using std::vector;
 using std::ifstream;
 using std::ofstream;
@@ -82,29 +83,7 @@ Account_running::Account_running(Account ac):
 		wl_done.addword(*id, *st, *ti, *da);
 	}
 	ifs.close();
-	string fn = string(na)+string("1.dat");//每日任务单词
-	ifstream ifs(fn.c_str(), ios_base::binary);
-	ifs.read((char*)da, 2);
-	Date d(*da);
-	if (d.istoday()) 
-	{
-		for (; ifs;) 
-		{
-			ifs.read((char*)id, 2);
-			ifs.read((char*)st, 1);
-			ifs.read((char*)ti, 1);
-			ifs.read((char*)da, 2);
-			Date d(*da);
-			Wordnode w(*id, *st, *ti, d);
-			wl_daily.addword(w);
-		}
-	}
-	ifs.close();
-}
-
-int Account_running::known_t() 
-{
-	return wl_done.count_total();
+	delete id, st, ti, da;
 }
 
 Account_running::~Account_running() 
@@ -150,7 +129,7 @@ Account_running::~Account_running()
 	}
 	ofs.close();
 	string fn = string(na) + string("1.dat");//存放每日任务
-	ofstream ofs(fn.c_str(), ios_base::binary);
+	ofs.open(fn.c_str(), ios_base::binary);
 	Date da;
 	da.set_date();
 	short a = da.get_short();
@@ -172,20 +151,46 @@ void Account_running::setpassword(string password)
 	md5 = encode_obj.Encode(password);
 };
 
-bool AccountManageSystem::sign_in(char vid,string password)
-{	
-	if (account_list[unsigned(vid)].md5 == Account::encode_obj.Encode(password))
-	{
-		ar = new Account_running(account_list[unsigned(vid)]);// 发生错误：写入堆内存出错
-		return true;
-	}
-	return false;
-}
-
 void Account_running::setgoal(int goal)
 {
 	go = goal;
 }
+
+int Account_running::known_t()
+{
+	return wl_done.count_total();
+}
+
+void Account_running::create_daily_wordlist() 
+{
+	string fn = string(na) + string("1.dat");//每日任务单词
+	short* id = new short;
+	char* st = new char;
+	char* ti = new char;
+	short* da = new short;
+	ifstream ifs(fn.c_str(), ios_base::binary);
+	ifs.read((char*)da, 2);
+	Date d(*da);
+	if (d.istoday())
+	{
+		for (; ifs;)
+		{
+			ifs.read((char*)id, 2);
+			ifs.read((char*)st, 1);
+			ifs.read((char*)ti, 1);
+			ifs.read((char*)da, 2);
+			Date d(*da);
+			Wordnode w(*id, *st, *ti, d);
+			wl_daily.addword(w);
+		}
+	}
+	else 
+	{
+
+	}
+	ifs.close();
+	delete id, st, ti, da;
+};
 
 void Account_running::complete() 
 {
@@ -205,13 +210,16 @@ AccountManageSystem::AccountManageSystem()
 	string md5;
 	char tMd5[33];
 	tMd5[32] = 0;
+	short go;
 	while (!file_is.eof())
 	{
 		file_is.read((char*)&vid,1);
 		file_is.read((char*)&na, NAME);
-		file_is.read((char*)tMd5, 32);//
+		file_is.read((char*)tMd5, 32);
+		file_is.read((char*)go, 2);
 		md5 = std::string(tMd5);
 		Account a(vid, string(na), md5);
+		a.go = go;
 		account_list.push_back(a);
 	}
 }
@@ -226,8 +234,19 @@ AccountManageSystem::~AccountManageSystem()
 			os.write(&(account_list[i]).vid, 1);
 			os.write((account_list[i]).na.c_str(), NAME);
 			os.write((account_list[i]).md5.c_str(), 32);
+			os.write((char*)&(account_list[i]).go, 2);
 		}
 	}
+}
+
+bool AccountManageSystem::sign_in(char vid, string password)
+{
+	if (account_list[unsigned(vid)].md5 == Account::encode_obj.Encode(password))
+	{
+		ar = new Account_running(account_list[unsigned(vid)]);// 发生错误：写入堆内存出错
+		return true;
+	}
+	return false;
 }
 
 bool AccountManageSystem::new_account(string name,string password) 
@@ -237,23 +256,72 @@ bool AccountManageSystem::new_account(string name,string password)
 		if (account_list[i].na == name)return false;
 	}
 	string md5 = Account::encode_obj.Encode(password);
-	int vid = account_list[account_list.size()].vid + 1;
+	int vid = account_list[account_list.size() - 1].vid + 1;
 	Account a(vid, name, md5);
 	account_list.push_back(a);
 	sign_in(vid, password);
 	return true;
 }
 
-void AccountManageSystem::delete_account(char vid)
+bool AccountManageSystem::delete_account(char vid)
 {
-	string path = string(".\\")+account_list[getindex(vid)].na + string(".dat");
-	account_list.erase(account_list.begin() + getindex(vid));
+	if (ar == nullptr || ar->vid != vid)return false;
+	string path = account_list[getindex(vid)].na + string(".dat");
 	remove(path.c_str());
+	path = account_list[getindex(vid)].na + string("1.dat");
+	remove(path.c_str());
+	int i = 0;
+	for (; (account_list[i].vid != vid) || (i > account_list.size()); i++);
+	if (i > account_list.size()) { return false; }
+	account_list.erase(account_list.begin() + i);
+	return true;
 }
 
 string AccountManageSystem::showname(char vid) 
 {
 	return account_list[vid].na;
+}
+
+bool AccountManageSystem::sign_out()
+{
+	if (ar != nullptr)
+	{
+		delete ar;
+		ar = nullptr;
+	}
+	return true;
+}
+
+bool AccountManageSystem::sign_in(std::string account, std::string password)
+{
+	int account_index = -1;
+	for (int i = 0; i < account_list.size(); i++)
+	{
+		if (account_list[i].na == account)
+			account_index = i;
+	}
+	if (account_index < 0)
+		return false;
+	else
+		return sign_in((unsigned char)account_index, password);
+}
+
+
+string AccountManageSystem::get_current_user_name()
+{
+	if (AccountManageSystem::ar != nullptr)
+		return ar->na;
+	else
+		return std::string();
+}
+
+
+vector<std::string> AccountManageSystem::get_all_users_name()
+{
+	std::vector<std::string> result;
+	for (auto n : account_list)
+		result.push_back(n.na);
+	return result;
 }
 
 char AccountManageSystem::getindex(char vid)
