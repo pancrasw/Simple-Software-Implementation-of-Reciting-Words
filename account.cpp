@@ -156,12 +156,13 @@ void Account_running::create_daily_wordlist()
 	short* da = new short;
 	ifstream ifs(fn.c_str(), ios_base::binary);
 	char ch = ifs.get();
+	bool ifs_ok = true;
 	if (!ifs.is_open() || ifs.bad() || (ifs.eof()))
-		return;
+		ifs_ok = false;
 	ifs.putback(ch);
 	ifs.read((char*)da, 2);
 	Date d(*da);
-	if (d.istoday())
+	if (d.istoday() && ifs_ok)
 	{
 		for (; ifs;)
 		{
@@ -176,7 +177,7 @@ void Account_running::create_daily_wordlist()
 	}
 	else 
 	{
-		for (; ifs;)
+		for (; ifs&&ifs_ok;)
 		{
 			ifs.read((char*)id, 2);
 			ifs.read((char*)st, 1);
@@ -211,7 +212,7 @@ void Account_running::create_daily_wordlist()
 		}
 		if (wl_daily.count_total() != go) 
 		{
-			for (; wl_daily.count_total() == go || wl_new.count_total() == 0;)
+			for (; wl_daily.count_total() != go && wl_new.count_total() != 0;)
 			{
 				Wordnode w = (wl_new.access(0))->data;
 				wl_daily.addword(w);
@@ -273,6 +274,7 @@ void Account_running::add_new_word(short vid)
 	Date da;
 	da.set_date();
 	Wordnode w(vid, Wordnode::undone, Wordnode::none, da);
+	wl_new.addword(w);
 }
 
 void AccountManageSystem::init() 

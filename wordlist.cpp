@@ -140,7 +140,7 @@ void WordList_daily::check(bool correct)
 			break;
 		}
 	}
-	void put_tail();
+	put_tail();
 }
 
 int WordList_daily::count_new()
@@ -157,7 +157,7 @@ void WordList_daily::addword(Wordnode w)
 void WordList_daily::put_tail()
 {
 	Snode<Wordnode>* ptr = Slist::head->next;
-	Slist::head = ptr->next;
+	Slist::head->next = ptr->next;
 	Slist::tail = Slist::tail->next = ptr;
 	ptr->next = nullptr;
 }
