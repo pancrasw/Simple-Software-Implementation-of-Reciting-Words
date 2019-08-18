@@ -50,6 +50,7 @@ public:
 	void complete();//打卡
 	bool iscomplete();//今日打卡与否
 	int  complete_t();//打卡天数统计
+	void add_new_word(short);//添加单词至用户目标单词
 };
 
 class AccountManageSystem 
@@ -58,8 +59,8 @@ public:
 	static Account_running* ar;//正在运行的用户
 	static vector<Account> account_list;//用户表
 	static string path;//所在文件夹路径
-	AccountManageSystem();
-	~AccountManageSystem();
+	static void init();
+	static void end();
 	static bool           sign_in(char,string);//验证密码
 	static bool           new_account(string,string);
 	static bool           delete_account(char);
