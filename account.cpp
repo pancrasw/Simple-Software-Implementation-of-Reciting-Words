@@ -49,8 +49,16 @@ Account_running::Account_running(Account ac):
 	char* st=new char;
 	char* ti=new char;
 	short* da = new short;
-	for (; ifs;) 
+	bool ifs_ok = true;
+	for (; ifs&&ifs_ok;) 
 	{
+		char ch = ifs.get();
+		if (!ifs.is_open() || ifs.bad() || (ifs.eof()))
+		{
+			ifs_ok = false;
+			break;
+		}
+		ifs.putback(ch);
 		ifs.read((char*)id, 2);
 		ifs.read((char*)st, 1);
 		ifs.read((char*)ti, 1);
@@ -164,8 +172,15 @@ void Account_running::create_daily_wordlist()
 	Date d(*da);
 	if (d.istoday() && ifs_ok)
 	{
-		for (; ifs;)
+		for (; ifs&&ifs_ok;)
 		{
+			char ch = ifs.get();
+			if (!ifs.is_open() || ifs.bad() || (ifs.eof()))
+			{
+				ifs_ok = false;
+				break;
+			}
+			ifs.putback(ch);
 			ifs.read((char*)id, 2);
 			ifs.read((char*)st, 1);
 			ifs.read((char*)ti, 1);
@@ -179,6 +194,13 @@ void Account_running::create_daily_wordlist()
 	{
 		for (; ifs&&ifs_ok;)
 		{
+			char ch = ifs.get();
+			if (!ifs.is_open() || ifs.bad() || (ifs.eof()))
+			{
+				ifs_ok = false;
+				break;
+			}
+			ifs.putback(ch);
 			ifs.read((char*)id, 2);
 			ifs.read((char*)st, 1);
 			ifs.read((char*)ti, 1);
@@ -279,23 +301,27 @@ void Account_running::add_new_word(short vid)
 
 void AccountManageSystem::init() 
 {
-	ifstream file_is("accountlist.dat", ios_base::binary);
-	char ch = file_is.get();
-	if (!file_is.is_open()|| file_is.bad()||(file_is.eof()))
+	ifstream ifs("accountlist.dat", ios_base::binary);
+	char ch = ifs.get();
+	if (!ifs.is_open()|| ifs.bad()||(ifs.eof()))
 		return;
-	file_is.putback(ch);
+	ifs.putback(ch);
 	char vid;
 	char na[21];
 	string md5;
 	char tMd5[33];
 	tMd5[32] = 0;
 	short go;
-	while (!file_is.eof())
+	while (!ifs.eof())
 	{
-		file_is.read((char*)&vid,1);
-		file_is.read((char*)&na, NAME);
-		file_is.read((char*)tMd5, 32);
-		file_is.read((char*)&go, 2);
+		char ch = ifs.get();
+		if (!ifs.is_open() || ifs.bad() || (ifs.eof()))
+			return;
+		ifs.putback(ch);
+		ifs.read((char*)&vid,1);
+		ifs.read((char*)&na, NAME);
+		ifs.read((char*)tMd5, 32);
+		ifs.read((char*)&go, 2);
 		md5 = string(tMd5);
 		Account a(vid, string(na), md5);
 		a.go = go;
@@ -308,7 +334,8 @@ void AccountManageSystem::end()
 	ofstream os("accountlist.dat",ios_base::binary|ios_base::trunc);
 	if (account_list.size() != 0) 
 	{
-		for (char i = 0; i < account_list.size(); i++)
+		int count = account_list.size();
+		for (char i = 0; i < count; i++)
 		{
 			os.write(&(account_list[i]).vid, 1);
 			os.write((account_list[i]).na.c_str(), NAME);

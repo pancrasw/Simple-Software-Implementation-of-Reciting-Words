@@ -140,7 +140,12 @@ void WordList_daily::check(bool correct)
 			break;
 		}
 	}
-	put_tail();
+	for (int i = count_total(); i > 0; i--)
+	{
+		put_tail();
+		Wordnode w = pop();
+		if (w.st != Wordnode::done)break;
+	}
 }
 
 int WordList_daily::count_new()

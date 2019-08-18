@@ -25,7 +25,7 @@ protected:
 	static Md5Encode encode_obj;//md5编码器
 	Account(char, string, string);
 protected:
-	short go;//每日目标
+	short go = -1;//每日目标
 	friend class AccountManageSystem;
 };
 
