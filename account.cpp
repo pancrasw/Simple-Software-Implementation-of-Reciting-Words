@@ -68,19 +68,15 @@ Account_running::Account_running(Account ac):
 		ifs.read((char*)da, 2);
 		Date d(*da);
 		Wordnode w(*id, *st, *ti, d);
-		if ((!d.istoday())&&(*ti!=Wordnode::fifth)) 
+		switch (*ti)
 		{
-			switch (*ti)
-			{
-			case Wordnode::none:wl_new.addword(w);
-			case Wordnode::first:wv_undone[0]->push_back(w);
-			case Wordnode::second:wv_undone[1]->push_back(w);
-			case Wordnode::third:wv_undone[2]->push_back(w);
-			case Wordnode::fourth:wv_undone[3]->push_back(w);
-			}
-			continue;
+		case Wordnode::none:wl_new.addword(w);
+		case Wordnode::first:wv_undone[0]->push_back(w);
+		case Wordnode::second:wv_undone[1]->push_back(w);
+		case Wordnode::third:wv_undone[2]->push_back(w);
+		case Wordnode::fourth:wv_undone[3]->push_back(w);
+		case Wordnode::fifth:wl_done.addword(*id, *st, *ti, *da);
 		}
-		wl_done.addword(*id, *st, *ti, *da);
 	}
 	ifs.close();
 	delete id, st, ti, da;
@@ -186,17 +182,93 @@ void Account_running::create_daily_wordlist()
 	}
 	else 
 	{
-
+		for (; ifs;)
+		{
+			ifs.read((char*)id, 2);
+			ifs.read((char*)st, 1);
+			ifs.read((char*)ti, 1);
+			ifs.read((char*)da, 2);
+			Date d(*da);
+			Wordnode w(*id, *st, *ti, d);
+			switch (*ti)
+			{
+			case Wordnode::none:wl_new.addword(w);
+			case Wordnode::first:wv_undone[0]->push_back(w);
+			case Wordnode::second:wv_undone[1]->push_back(w);
+			case Wordnode::third:wv_undone[2]->push_back(w);
+			case Wordnode::fourth:wv_undone[3]->push_back(w);
+			case Wordnode::fifth:wl_done.addword(*id, *st, *ti, *da);
+			}
+		}
+		for (int i = 3; i >= 0; i--) 
+		{
+			int count = wv_undone[i]->size();
+			for (int j = count - 1; j >= 0; j--) 
+			{
+				Wordnode w = (*(wv_undone[i]))[j];
+				if (w.isEbbinghaus()) 
+				{
+					wl_daily.addword(w);
+					(*(wv_undone[i])).erase((*(wv_undone[i])).begin() + j);
+				}
+				if (wl_daily.count_total() == go) break;
+			}
+			if (wl_daily.count_total() == go) break;
+		}
+		if (wl_daily.count_total() != go) 
+		{
+			Wordnode w = (wl_new.access(0))->data;
+			wl_daily.addword(w);
+			wl_new.delete_node(0);
+		}
 	}
+	wl_daily.shuffle();
 	ifs.close();
 	delete id, st, ti, da;
 };
+
+int Account_running::learning_t() 
+{
+	int count = 0;
+	for (int i = 0; i < 4; i++) 
+	{
+		count += wv_undone[i]->size();
+	}
+	return count;
+}
+
+int Account_running::word_goal()
+{
+	return go;
+}
+
+int Account_running::word_rest() 
+{
+	if (wl_daily.count_total() == 0) return 0;
+	return wl_daily.count_total() - wl_daily.count_done();
+}
+
+int Account_running::word_new() 
+{
+	return wl_daily.count_new();
+}
 
 void Account_running::complete() 
 {
 	Date da;
 	da.get_date();
 	date_list.operator+(da);
+}
+
+bool Account_running::iscomplete() 
+{
+	Date da = date_list.pop().data;
+	return da.istoday();
+}
+
+int Account_running::complete_t()
+{
+	return date_list.count();
 }
 
 AccountManageSystem::AccountManageSystem() 
@@ -217,7 +289,7 @@ AccountManageSystem::AccountManageSystem()
 		file_is.read((char*)&na, NAME);
 		file_is.read((char*)tMd5, 32);
 		file_is.read((char*)go, 2);
-		md5 = std::string(tMd5);
+		md5 = string(tMd5);
 		Account a(vid, string(na), md5);
 		a.go = go;
 		account_list.push_back(a);

@@ -1,6 +1,21 @@
-
+#ifndef WORDLIST_CPP
+#define WORDLIST_CPP
 #include"wordlist.h"
 //@author:Ïö
+
+bool Wordnode::isEbbinghaus()
+{
+	short lastdate = da.get_short();
+	Date d;
+	d.set_date();
+	short today = d.get_short();
+	if ((ti == Wordnode::first && (today - lastdate == 1)) ||
+		(ti == Wordnode::second && (today - lastdate == 1)) ||
+		(ti == Wordnode::third && (today - lastdate == 2)) ||
+		(ti == Wordnode::fourth && (today - lastdate == 3)))
+		return true;
+	return false;
+}
 
 WordList::WordList() {}
 
@@ -128,6 +143,16 @@ void WordList_daily::check(bool correct)
 	void put_tail();
 }
 
+int WordList_daily::count_new()
+{
+	return new_word;
+}
+
+void WordList_daily::addword(Wordnode w) 
+{
+	WordList::addword(w);
+	if (w.ti == Wordnode::none)new_word++;
+}
 
 void WordList_daily::put_tail()
 {
@@ -136,4 +161,4 @@ void WordList_daily::put_tail()
 	Slist::tail = Slist::tail->next = ptr;
 	ptr->next = nullptr;
 }
-
+#endif

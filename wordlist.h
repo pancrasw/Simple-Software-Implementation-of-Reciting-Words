@@ -20,6 +20,7 @@ struct Wordnode
 		ti(time),
 		da(date)
 	{}
+	bool isEbbinghaus();//是否符合艾宾浩克遗忘曲线
 };
 
 class WordList :public Slist<Wordnode>
@@ -49,9 +50,12 @@ private://禁用的函数
 class WordList_daily:public WordList
 {
 public:
-	void check(bool);
 	Date da;
+	void check(bool);//单词会与不会
+	int count_new();//新单词个数
+	void addword(Wordnode);//重载
 private:
+	int new_word = 0;//新单词个数
 	void put_tail();//将单词放到末尾
 };
 

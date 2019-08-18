@@ -41,15 +41,15 @@ public:
 	~Account_running();
 	void setpassword(string);//修改密码
 	void setgoal(int);//设置每日目标
-	int known_t();//已会单词共计
+	int	 known_t();//已会单词共计
 	void create_daily_wordlist();
-	int learning_t();//正在学共计
-	int word_goal();//目标单词
-	int word_rest();//剩余单词
-	int word_new();//新词个数
+	int  learning_t();//正在学共计
+	int  word_goal();//目标单词
+	int  word_rest();//剩余单词
+	int  word_new();//新词个数
 	void complete();//打卡
 	bool iscomplete();//今日打卡与否
-	int complete_t();//打卡天数统计
+	int  complete_t();//打卡天数统计
 };
 
 class AccountManageSystem 
@@ -60,15 +60,15 @@ public:
 	static string path;//所在文件夹路径
 	AccountManageSystem();
 	~AccountManageSystem();
-	static bool   sign_in(char,string);//验证密码
-	static bool   new_account(string,string);
-	static bool   delete_account(char);
-	static string showname(char);
-	static bool                     sign_out();                                        //登出
-	static bool                     sign_in(std::string account, std::string password);//登录
-	static bool                     delete_current_account();                          //删除当前用户
-	static std::string              get_current_user_name();                           //获取当前用户名称
-	static std::vector<std::string> get_all_users_name();                              //获取所有用户名称
+	static bool           sign_in(char,string);//验证密码
+	static bool           new_account(string,string);
+	static bool           delete_account(char);
+	static string         showname(char);
+	static bool           sign_out();                                        //登出
+	static bool           sign_in(std::string account, std::string password);//登录
+	static bool           delete_current_account();                          //删除当前用户
+	static string         get_current_user_name();                           //获取当前用户名称
+	static vector<string> get_all_users_name();                              //获取所有用户名称
 private:
 	static char getindex(char);
 };

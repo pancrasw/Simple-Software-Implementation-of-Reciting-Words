@@ -52,6 +52,8 @@ public:
 	void show();//Êä³öÁ´±íÃ¿¸öÔªËØ
 	void delete_node(int n);//É¾³ıµÚn+1¸öÔªËØ
 	void shuffle();//Ï´ÅÆ£¬´òÂÒÅÆĞò
+	int count();//ÔªËØ×ÜÊı
+	Snode<Type> pop();//»ñÈ¡×îºóÒ»¸öÔªËØ
 	Slist& operator+(Type a);//Ä©Î»¼Óµ¥´Ê
 };
 
@@ -65,7 +67,7 @@ void Slist<Type>::insert(Snode<Type>*a, Snode<Type>*b, Type n) //ÔÚÁ½¸öÏàÁÚ½ÚµãÖ
 }
 
 template<typename Type>
-void Slist<Type>::insert(Type n, int position)//µÚÒ»¸ö´«µİËùÒª²åÈëµÄÖµ£¬µÚ¶ş¸öÊäÈë²åÈëµÄÎ»ÖÃ,¼´°Ñ²åÈëÔªËØÉèÎªµÚposition¸öÔªËØ
+void Slist<Type>::insert (Type n, int position)//µÚÒ»¸ö´«µİËùÒª²åÈëµÄÖµ£¬µÚ¶ş¸öÊäÈë²åÈëµÄÎ»ÖÃ,¼´°Ñ²åÈëÔªËØÉèÎªµÚposition¸öÔªËØ
 {//ÎŞ·ÃÎÊ¿Õ½Úµã±¨´í
 	Snode<Type>*p1 = this->head;//Ç°Ö¸ÕëÖ¸ÏòÉÚ±øÎ»
 	Snode<Type>*p2 = p1->next;//ºóÖ¸Õë
@@ -234,6 +236,19 @@ void Slist<Type>::shuffle()
 			a.head[i]->next = nullptr;
 		}
 	}
+}
+
+template<typename Type>
+int Slist<Type>::count() 
+{
+	return total;
+}
+
+
+template<typename Type>
+Snode<Type> Slist<Type>::pop()
+{
+	return *tail;
 }
 
 #endif // !SLIST_H
