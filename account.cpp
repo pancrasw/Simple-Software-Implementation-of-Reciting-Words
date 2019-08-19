@@ -139,11 +139,6 @@ Account_running::~Account_running()
 	ofs.close();
 }
 
-void Account_running::setpassword(string password) 
-{
-	md5 = encode_obj.Encode(password);
-};
-
 void Account_running::setgoal(int goal)
 {
 	go = goal;
@@ -460,6 +455,13 @@ vector<std::string> AccountManageSystem::get_all_users_name()
 	for (auto n : account_list)
 		result.push_back(n.na);
 	return result;
+}
+
+bool AccountManageSystem::setpassword(string password)
+{
+	if (ar == nullptr)return false;
+	Account* ac = &account_list[getindex(ar->vid)];
+	ac->md5 = Account::encode_obj.Encode(password);
 }
 
 char AccountManageSystem::getindex(char vid)

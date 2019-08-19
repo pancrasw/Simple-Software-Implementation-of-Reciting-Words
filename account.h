@@ -39,7 +39,6 @@ public:
 	Slist<Date> date_list;//打卡日期
 	Account_running(Account);
 	~Account_running();
-	void setpassword(string);//修改密码
 	void setgoal(int);//设置每日目标
 	int	 known_t();//已会单词共计
 	void create_daily_wordlist();
@@ -51,6 +50,8 @@ public:
 	bool iscomplete();//今日打卡与否
 	int  complete_t();//打卡天数统计
 	void add_new_word(short);//添加单词至用户目标单词
+private:
+	friend class AccountManageSystem;
 };
 
 class AccountManageSystem 
@@ -69,7 +70,8 @@ public:
 	static bool           sign_in(std::string account, std::string password);//登录
 	static bool           delete_current_account();                          //删除当前用户
 	static string         get_current_user_name();                           //获取当前用户名称
-	static vector<string> get_all_users_name();                              //获取所有用户名称
+	static vector<string> get_all_users_name();//获取所有用户名称
+	static bool           setpassword(string);
 private:
 	static char getindex(char);
 };
