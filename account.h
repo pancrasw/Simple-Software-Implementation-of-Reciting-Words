@@ -7,8 +7,8 @@
 #include<fstream>
 #include<vector>
 #include<cstdio>
-#define WORD 4
-#define NAME 21
+#define ACCOUNT_WORD 4
+#define ACCOUNT_NAME 21
 //@author:霄
 using std::vector;
 using std::string;
@@ -25,7 +25,7 @@ protected:
 	static Md5Encode encode_obj;//md5编码器
 	Account(char, string, string);
 protected:
-	short go = -1;//每日目标
+	short go = 50;//每日目标
 	friend class AccountManageSystem;
 };
 
@@ -39,7 +39,6 @@ public:
 	Slist<Date> date_list;//打卡日期
 	Account_running(Account);
 	~Account_running();
-	void setgoal(int);//设置每日目标
 	int	 known_t();//已会单词共计
 	void create_daily_wordlist();
 	int  learning_t();//正在学共计
@@ -61,7 +60,7 @@ public:
 	static vector<Account> account_list;//用户表
 	static string path;//所在文件夹路径
 	static void init();
-	static void end();
+	static void save();
 	static bool           sign_in(char,string);//验证密码
 	static bool           new_account(string,string);
 	static bool           delete_account(char);
@@ -72,6 +71,8 @@ public:
 	static string         get_current_user_name();                           //获取当前用户名称
 	static vector<string> get_all_users_name();//获取所有用户名称
 	static bool           setpassword(string);
+	static bool           setgoal(short); 
+	static void end();
 private:
 	static char getindex(char);
 };

@@ -12,7 +12,7 @@ using std::ofstream;
 
 void str_copy(char*destination,char*source) 
 {
-	for (int i = 0; i < NAME; i++) 
+	for (int i = 0; i < ACCOUNT_NAME; i++)
 	{
 		destination[i] = source[i];
 	}
@@ -39,7 +39,7 @@ Account_running::Account_running(Account ac):
 	{
 		wv_undone[i] = new vector<Wordnode>;
 	}
-	string file_name = string("0" + a) + string(".dat");
+	string file_name = string(to_string(a)) + string(".dat");
 	ifstream ifs(file_name.c_str(), ios_base::binary);
 	char ch = ifs.get();
 	if (!ifs.is_open() || ifs.bad() || (ifs.eof()))
@@ -82,7 +82,7 @@ Account_running::Account_running(Account ac):
 Account_running::~Account_running() 
 {
 	int b = vid;
-	string file_name = string("0" + b) + string(".dat");
+	string file_name = string(to_string(b)) + string(".dat");
 	ofstream ofs(file_name.c_str(), ios_base::binary);
 	Wordnode w;
 	for (; wl_done.count_total() != 0;)
@@ -121,7 +121,7 @@ Account_running::~Account_running()
 		delete wv_undone[i];
 	}
 	delete[]wv_undone;
-	string fn = string("0" + b) + string("1.dat");//存放每日任务
+	string fn = string(to_string(b)) + string("1.dat");//存放每日任务
 	ofs.open(fn.c_str(), ios_base::binary);
 	Date da;
 	da.set_date();
@@ -139,11 +139,6 @@ Account_running::~Account_running()
 	ofs.close();
 }
 
-void Account_running::setgoal(int goal)
-{
-	go = goal;
-}
-
 int Account_running::known_t()
 {
 	return wl_done.count_total();
@@ -152,7 +147,7 @@ int Account_running::known_t()
 void Account_running::create_daily_wordlist() 
 {
 	int a = vid;
-	string fn = string("0" + a) + string("1.dat");//每日任务单词
+	string fn = string(to_string(a)) + string("1.dat");//每日任务单词
 	short* id = new short;
 	char* st = new char;
 	char* ti = new char;
@@ -314,7 +309,7 @@ void AccountManageSystem::init()
 			return;
 		ifs.putback(ch);
 		ifs.read((char*)&vid,1);
-		ifs.read((char*)&na, NAME);
+		ifs.read((char*)&na, ACCOUNT_NAME);
 		ifs.read((char*)tMd5, 32);
 		ifs.read((char*)&go, 2);
 		md5 = string(tMd5);
@@ -324,16 +319,17 @@ void AccountManageSystem::init()
 	}
 }
 
-void AccountManageSystem::end() 
+void AccountManageSystem::save()
 {
-	ofstream os("accountlist.dat",ios_base::binary|ios_base::trunc);
-	if (account_list.size() != 0) 
+
+	ofstream os("accountlist.dat", ios_base::binary | ios_base::trunc);
+	if (account_list.size() != 0)
 	{
 		int count = account_list.size();
 		for (char i = 0; i < count; i++)
 		{
 			os.write(&(account_list[i]).vid, 1);
-			os.write((account_list[i]).na.c_str(), NAME);
+			os.write((account_list[i]).na.c_str(), ACCOUNT_NAME);
 			os.write((account_list[i]).md5.c_str(), 32);
 			os.write((char*)&(account_list[i]).go, 2);
 		}
@@ -343,9 +339,9 @@ void AccountManageSystem::end()
 bool AccountManageSystem::sign_in(char vid, string password)
 {
 	if (vid > account_list.back().vid)return false;
-	if (account_list[vid].md5 == Account::encode_obj.Encode(password))
+	if (account_list[getindex(vid)].md5 == Account::encode_obj.Encode(password))
 	{
-		ar = new Account_running(account_list[vid]);// 发生错误：写入堆内存出错
+		ar = new Account_running(account_list[getindex(vid)]);// 发生错误：写入堆内存出错
 		return true;
 	}
 	return false;
@@ -372,15 +368,16 @@ bool AccountManageSystem::new_account(string name,string password)
 	Account a(vid, name, md5);
 	account_list.push_back(a);
 	sign_in(vid, password);
+	save();
 	return true;
 }
 
 bool AccountManageSystem::delete_account(char vid)
 {
 	if (ar == nullptr || ar->vid != vid)return false;
-	string path = account_list[getindex(vid)].na + string(".dat");
+	string path = string(to_string(vid)) + string(".dat");
 	remove(path.c_str());
-	path = account_list[getindex(vid)].na + string("1.dat");
+	path = string(vid + "0") + string("1.dat");
 	remove(path.c_str());
 	int i = 0;
 	for (; (account_list[i].vid != vid) || (i > account_list.size()); i++);
@@ -400,27 +397,26 @@ bool AccountManageSystem::sign_out()
 	{
 		delete ar;
 		ar = nullptr;
-
-		//
+		return true;
 	}
-	return true;
+	return false;
 }
 
 bool AccountManageSystem::sign_in(string account, std::string password)
 {
-	int account_index = -1;
+	int account_vid = -1;
 	for (int i = 0; i < account_list.size(); i++)
 	{
 		if (account_list[i].na == account)
 		{
-			account_index = i;
+			account_vid = account_list[i].vid;
 			break;
 		}
 	}
-	if (account_index < 0)
+	if (account_vid < 0)
 		return false;
 	else
-		return sign_in((unsigned char)account_index, password);
+		return sign_in((unsigned char)account_vid, password);
 }
 
 
@@ -461,7 +457,23 @@ bool AccountManageSystem::setpassword(string password)
 {
 	if (ar == nullptr)return false;
 	Account* ac = &account_list[getindex(ar->vid)];
-	ac->md5 = Account::encode_obj.Encode(password);
+	ar->md5 = ac->md5 = Account::encode_obj.Encode(password);
+	return true;
+}
+
+bool AccountManageSystem::setgoal(short go)
+{
+	if (ar == nullptr)return false;
+	Account* ac = &account_list[getindex(ar->vid)];
+	ar->go = ac->go = go;
+	return true;
+}
+
+void AccountManageSystem::end()
+{
+	save();
+	sign_out();
+	account_list.clear();
 }
 
 char AccountManageSystem::getindex(char vid)
