@@ -9,10 +9,10 @@ bool Wordnode::isEbbinghaus()
 	Date d;
 	d.set_date();
 	short today = d.get_short();
-	if ((ti == Wordnode::first && (today - lastdate == 1)) ||
-		(ti == Wordnode::second && (today - lastdate == 1)) ||
-		(ti == Wordnode::third && (today - lastdate == 2)) ||
-		(ti == Wordnode::fourth && (today - lastdate == 3)))
+	if (((ti == Wordnode::first) && (today - lastdate == 1)) ||
+		((ti == Wordnode::second) && (today - lastdate == 1)) ||
+		((ti == Wordnode::third) && (today - lastdate == 2)) ||
+		((ti == Wordnode::fourth) && (today - lastdate == 3)))
 		return true;
 	return false;
 }
@@ -90,7 +90,6 @@ int WordList::count_right()
 void WordList_daily::check(bool correct)
 {
 	Wordnode* word_obj = &(Slist::access(0)->data);
-	word_obj->da.set_date();
 	if(!(word_obj->da.istoday()))
 	{
 		word_obj->st = Wordnode::undone;
@@ -104,6 +103,7 @@ void WordList_daily::check(bool correct)
 			undone_t--;
 			done_t++;
 			word_obj->ti++;
+			word_obj->da.set_date();
 			break;
 		case Wordnode::done:
 			break;
@@ -117,6 +117,7 @@ void WordList_daily::check(bool correct)
 			right_t--;
 			done_t++;
 			word_obj->ti++;
+			word_obj->da.set_date();
 		}
 	}
 	else
@@ -156,7 +157,7 @@ int WordList_daily::count_new()
 void WordList_daily::addword(Wordnode w) 
 {
 	WordList::addword(w);
-	if (w.ti == Wordnode::none)new_word++;
+	if (w.ti == Wordnode::none&&w.da.istoday()&&w.st==Wordnode::undone)new_word++;
 }
 
 void WordList_daily::put_tail()

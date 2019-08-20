@@ -59,11 +59,10 @@ public:
 	static Account_running* ar;//正在运行的用户
 	static vector<Account> account_list;//用户表
 	static string path;//所在文件夹路径
-	static void init();
-	static void save();
+	static void           init();
+	static void           save();
 	static bool           sign_in(char,string);//验证密码
 	static bool           new_account(string,string);
-	static bool           delete_account(char);
 	static string         showname(char);
 	static bool           sign_out();                                        //登出
 	static bool           sign_in(std::string account, std::string password);//登录
@@ -72,8 +71,9 @@ public:
 	static vector<string> get_all_users_name();//获取所有用户名称
 	static bool           setpassword(string);
 	static bool           setgoal(short); 
-	static void end();
+	static bool           end();
 private:
+	static bool           delete_account(char);
 	static char getindex(char);
 };
 

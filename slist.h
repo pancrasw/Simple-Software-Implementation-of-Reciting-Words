@@ -202,6 +202,10 @@ void Slist<Type>::delete_node(int n)
 	for (int i = 0; i < n; i++, ptr_slow = ptr_fast, ptr_fast = ptr_fast->next);
 	ptr_slow->next = ptr_fast->next;
 	delete ptr_fast;
+	if (n == (total - 1)) 
+	{
+		tail = ptr_slow;
+	}
 	total--;
 }
 

@@ -88,6 +88,9 @@ Account_running::~Account_running()
 	for (; wl_done.count_total() != 0;)
 	{
 		w = wl_done.pop();
+
+		//w.da = Date(w.da.get_short() - 1);//测试日期用
+
 		wl_done.delete_node(0);
 		ofs.write((char*)&w.id, 2);
 		ofs.write((char*)&w.st, 1);
@@ -97,6 +100,9 @@ Account_running::~Account_running()
 	for (; wl_new.count_total() != 0;)
 	{
 		w = wl_new.pop();
+
+	    //w.da = Date(w.da.get_short() - 1);//测试日期用
+
 		wl_new.delete_node(0);
 		ofs.write((char*)&w.id, 2);
 		ofs.write((char*)&w.st, 1);
@@ -107,8 +113,11 @@ Account_running::~Account_running()
 	{
 		for (int j = (*(wv_undone[i])).size() ; j > 0; j--)
 		{
-			w = (*(wv_undone[i])).back();
-			(*(wv_undone[i])).pop_back();
+			w = (*(wv_undone[i]))[0];
+
+			//w.da = Date(w.da.get_short() - 1);//测试日期用
+
+			(*(wv_undone[i])).erase((*(wv_undone[i])).begin());
 			ofs.write((char*)&w.id, 2);
 			ofs.write((char*)&w.st, 1);
 			ofs.write((char*)&w.ti, 1);
@@ -126,10 +135,16 @@ Account_running::~Account_running()
 	Date da;
 	da.set_date();
 	short a = da.get_short();
+
+	//a--;//测试日期用
+
 	ofs.write((char*)&a, 2);
 	for (; wl_daily.count_total() != 0;)
 	{
 		w = wl_daily.pop();
+
+		//w.da = Date(w.da.get_short() - 1);//测试日期用
+
 		wl_daily.delete_node(0);
 		ofs.write((char*)&w.id, 2);
 		ofs.write((char*)&w.st, 1);
@@ -195,15 +210,18 @@ void Account_running::create_daily_wordlist()
 			ifs.read((char*)st, 1);
 			ifs.read((char*)ti, 1);
 			ifs.read((char*)da, 2);
+
+			//*da -= 1;//测试用
+
 			Date d(*da);
-			Wordnode w(*id, *st, *ti, d);
+			Wordnode w(*id, Wordnode::undone, *ti, d);//过一天后读取默认重新背，重置st
 			switch (*ti)
 			{
-			case Wordnode::none:wl_new.addword(w);
-			case Wordnode::first:wv_undone[0]->push_back(w);
-			case Wordnode::second:wv_undone[1]->push_back(w);
-			case Wordnode::third:wv_undone[2]->push_back(w);
-			case Wordnode::fourth:wv_undone[3]->push_back(w);
+			case Wordnode::none:wl_new.addword(w); break;
+			case Wordnode::first:wv_undone[0]->push_back(w); break;
+			case Wordnode::second:wv_undone[1]->push_back(w); break;
+			case Wordnode::third:wv_undone[2]->push_back(w); break;
+			case Wordnode::fourth:wv_undone[3]->push_back(w); break;
 			case Wordnode::fifth:wl_done.addword(*id, *st, *ti, *da);
 			}
 		}
@@ -374,14 +392,12 @@ bool AccountManageSystem::new_account(string name,string password)
 
 bool AccountManageSystem::delete_account(char vid)
 {
-	if (ar == nullptr || ar->vid != vid)return false;
+	int i = getindex(vid);
+	if (i < 0 || (!sign_out())) { return false; }
 	string path = string(to_string(vid)) + string(".dat");
 	remove(path.c_str());
-	path = string(vid + "0") + string("1.dat");
+	path = string(to_string(vid)) + string("1.dat");
 	remove(path.c_str());
-	int i = 0;
-	for (; (account_list[i].vid != vid) || (i > account_list.size()); i++);
-	if (i > account_list.size()) { return false; }
 	account_list.erase(account_list.begin() + i);
 	return true;
 }
@@ -424,14 +440,7 @@ bool AccountManageSystem::delete_current_account()
 {
 	if (ar != nullptr)
 	{
-		for (int i = 0; i < AccountManageSystem::account_list.size(); i++)
-		{
-			if (ar->vid == account_list[i].vid)
-			{
-				AccountManageSystem::delete_account(i);
-				return true;
-			}
-		}
+		return delete_account(ar->vid);		
 	}
 	return false;
 }
@@ -469,11 +478,11 @@ bool AccountManageSystem::setgoal(short go)
 	return true;
 }
 
-void AccountManageSystem::end()
+bool AccountManageSystem::end()
 {
 	save();
-	sign_out();
 	account_list.clear();
+	return sign_out();
 }
 
 char AccountManageSystem::getindex(char vid)
@@ -482,6 +491,7 @@ char AccountManageSystem::getindex(char vid)
 	{
 		if (account_list[i].vid == vid)return i;
 	}
+	return -1;
 }
 
 Account_running* AccountManageSystem::ar = nullptr;
