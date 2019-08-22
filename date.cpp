@@ -33,7 +33,7 @@ void Date::set_date()
 //
 //}
 
-char* Date::get_date()
+string Date::get_date()
 {
 	time_t t;
 	struct tm p;
@@ -41,7 +41,18 @@ char* Date::get_date()
 	gmtime_s(&p, &t);
 	static char s[11];//11个字符，其中包括空字符
 	strftime(s, 11, "%Y-%m-%d", &p);
-	return s;
+	string d = s;
+	return d;
+}
+
+Date_concrete Date::get_date_concrete()
+{
+	Date_concrete d;
+	string s = get_date();
+	d.year = (s[0] - '0') * 1000 + (s[1] - '0') * 100 + (s[2] - '0') * 10 + s[3] - '0';
+	d.month = (s[5] - '0') * 10 + s[6] - '0';
+	d.day = (s[8] - '0') * 10 + s[9] - '0';
+	return d;
 }
 
 bool Date::istoday()

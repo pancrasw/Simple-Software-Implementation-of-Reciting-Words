@@ -162,9 +162,12 @@ void WordList_daily::addword(Wordnode w)
 
 void WordList_daily::put_tail()
 {
-	Snode<Wordnode>* ptr = Slist::head->next;
-	Slist::head->next = ptr->next;
-	Slist::tail = Slist::tail->next = ptr;
-	ptr->next = nullptr;
+	if (count_total() > 1)
+	{
+		Snode<Wordnode>* ptr = Slist::head->next;
+		Slist::head->next = ptr->next;
+		Slist::tail = Slist::tail->next = ptr;
+		ptr->next = nullptr;
+	}
 }
 #endif

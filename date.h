@@ -5,12 +5,20 @@
 #include"slist.h"
 #define DAY 86400
 
+struct Date_concrete 
+{
+	short year;
+	short month;
+	short day;
+};
+
 class Date 
 {
 public:
 	Date(short da = 0) :date(da) {};
 	void set_date();//取现在时间作为日期
-	char* get_date();//格式："YYYY-MM-DD"
+	string get_date();//格式："YYYY-MM-DD"
+	Date_concrete get_date_concrete();
 	bool istoday();
 	short get_short();
 private:

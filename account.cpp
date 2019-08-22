@@ -67,12 +67,12 @@ Account_running::Account_running(Account ac):
 		Wordnode w(*id, *st, *ti, d);
 		switch (*ti)
 		{
-		case Wordnode::none:wl_new.addword(w);
-		case Wordnode::first:wv_undone[0]->push_back(w);
-		case Wordnode::second:wv_undone[1]->push_back(w);
-		case Wordnode::third:wv_undone[2]->push_back(w);
-		case Wordnode::fourth:wv_undone[3]->push_back(w);
-		case Wordnode::fifth:wl_done.addword(*id, *st, *ti, *da);
+		case Wordnode::none:wl_new.addword(w); break;
+		case Wordnode::first:wv_undone[0]->push_back(w); break;
+		case Wordnode::second:wv_undone[1]->push_back(w); break;
+		case Wordnode::third:wv_undone[2]->push_back(w); break;
+		case Wordnode::fourth:wv_undone[3]->push_back(w); break;
+		case Wordnode::fifth:wl_done.addword(*id, *st, *ti, *da); break;
 		}
 	}
 	ifs.close();
@@ -130,28 +130,31 @@ Account_running::~Account_running()
 		delete wv_undone[i];
 	}
 	delete[]wv_undone;
-	string fn = string(to_string(b)) + string("1.dat");//存放每日任务
-	ofs.open(fn.c_str(), ios_base::binary);
-	Date da;
-	da.set_date();
-	short a = da.get_short();
-
-	//a--;//测试日期用
-
-	ofs.write((char*)&a, 2);
-	for (; wl_daily.count_total() != 0;)
+	if (wl_daily.count_total() != 0)
 	{
-		w = wl_daily.pop();
+		string fn = string(to_string(b)) + string("1.dat");//存放每日任务
+		ofs.open(fn.c_str(), ios_base::binary);
+		Date da;
+		da.set_date();
+		short a = da.get_short();
 
-		//w.da = Date(w.da.get_short() - 1);//测试日期用
+		//a--;//测试日期用
 
-		wl_daily.delete_node(0);
-		ofs.write((char*)&w.id, 2);
-		ofs.write((char*)&w.st, 1);
-		ofs.write((char*)&w.ti, 1);
-		ofs.write((char*)&w.da, 2);
+		ofs.write((char*)&a, 2);
+		for (; wl_daily.count_total() != 0;)
+		{
+			w = wl_daily.pop();
+
+			//w.da = Date(w.da.get_short() - 1);//测试日期用
+
+			wl_daily.delete_node(0);
+			ofs.write((char*)&w.id, 2);
+			ofs.write((char*)&w.st, 1);
+			ofs.write((char*)&w.ti, 1);
+			ofs.write((char*)&w.da, 2);
+		}
+		ofs.close();
 	}
-	ofs.close();
 }
 
 int Account_running::known_t()
@@ -281,11 +284,16 @@ int Account_running::word_new()
 	return wl_daily.count_new();
 }
 
-void Account_running::complete() 
+bool Account_running::complete() 
 {
-	Date da;
-	da.get_date();
-	date_list.operator+(da);
+	if ((wl_daily.count_total() != 0) && (wl_daily.count_total() == wl_daily.count_done()))
+	{
+		Date da;
+		da.set_date();
+		date_list.operator+(da);
+		return true;
+	}
+	return false;
 }
 
 bool Account_running::iscomplete() 
@@ -305,6 +313,95 @@ void Account_running::add_new_word(short vid)
 	da.set_date();
 	Wordnode w(vid, Wordnode::undone, Wordnode::none, da);
 	wl_new.addword(w);
+}
+
+//添加单词至用户目标单词
+
+void Account_running::save()
+{
+	int b = vid;
+	string file_name = string(to_string(b)) + string(".dat");
+	ofstream ofs(file_name.c_str(), ios_base::binary);
+	Wordnode w;
+	for (int i = 0; i < wl_done.count_total(); i++)
+	{
+		w = wl_done.access(i)->data;
+		ofs.write((char*)&w.id, 2);
+		ofs.write((char*)&w.st, 1);
+		ofs.write((char*)&w.ti, 1);
+		ofs.write((char*)&w.da, 2);
+	}
+	for (int i = 0; i < wl_new.count_total(); i++)
+	{
+		w = wl_new.access(i)->data;
+		ofs.write((char*)&w.id, 2);
+		ofs.write((char*)&w.st, 1);
+		ofs.write((char*)&w.ti, 1);
+		ofs.write((char*)&w.da, 2);
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < (*(wv_undone[i])).size(); j++)
+		{
+			w = (*(wv_undone[i]))[j];
+			ofs.write((char*)&w.id, 2);
+			ofs.write((char*)&w.st, 1);
+			ofs.write((char*)&w.ti, 1);
+			ofs.write((char*)&w.da, 2);
+		}
+	}
+	ofs.close();
+	string fn = string(to_string(b)) + string("1.dat");//每日任务单词
+	ofs.open(fn.c_str(), ios_base::binary);
+	Date da;
+	da.set_date();
+	short a = da.get_short();
+	ofs.write((char*)&a, 2);
+	for (int i = 0; i < wl_daily.count_total(); i++)
+	{
+		w = wl_daily.access(i)->data;
+		ofs.write((char*)&w.id, 2);
+		ofs.write((char*)&w.st, 1);
+		ofs.write((char*)&w.ti, 1);
+		ofs.write((char*)&w.da, 2);
+	}
+	ofs.close();
+}
+
+void Account_running::read_dl()
+{
+	string fn = to_string(vid) + string("2.dat");
+	ifstream ifs(fn.c_str(), ios_base::binary);
+	char ch = ifs.get();
+	bool ifs_ok = true;
+	if (!ifs.is_open() || ifs.bad() || (ifs.eof()))
+		ifs_ok = false;
+	ifs.putback(ch);
+	short da = 0;
+	for (; ifs&&ifs_ok;)
+	{
+		ifs.read((char*)&da, 2);
+		Date d(da);
+		date_list.operator+(d);
+		ch = ifs.get();
+		if (!ifs.is_open() || ifs.bad() || (ifs.eof()))
+			ifs_ok = false;
+		ifs.putback(ch);
+	}
+}
+
+void Account_running::save_dl()
+{
+	string fn = to_string(vid) + string("2.dat");
+	ofstream ofs(fn.c_str(), ios_base::binary);
+	Snode<Date>*ptr = date_list.access(0);
+	short d;
+	for (; ; ptr = ptr->next)
+	{
+		d = ptr->data.get_short();
+		ofs.write((char*)&d, 2);
+		if (ptr->next == nullptr)break;
+	}
 }
 
 void AccountManageSystem::init() 

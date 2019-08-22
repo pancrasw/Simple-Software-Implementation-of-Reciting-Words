@@ -45,11 +45,15 @@ public:
 	int  word_goal();//目标单词
 	int  word_rest();//剩余单词
 	int  word_new();//新词个数
-	void complete();//打卡
+	bool complete();//打卡
 	bool iscomplete();//今日打卡与否
 	int  complete_t();//打卡天数统计
 	void add_new_word(short);//添加单词至用户目标单词
+	void save();	
+	void read_dl();
+	void save_dl();
 private:
+	
 	friend class AccountManageSystem;
 };
 
@@ -74,7 +78,7 @@ public:
 	static bool           end();
 private:
 	static bool           delete_account(char);
-	static char getindex(char);
+	static char           getindex(char);
 };
 
 #endif // !ACCOUNT_H
